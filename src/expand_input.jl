@@ -53,15 +53,13 @@ function expand_inputs(;
             # if input file found, I'll inserted in place
             verbose && @info("Found input file", input_file)
             input_file_found = true
-            # indent = _get_indent(line)
-            indent = ""
 
             input_file = joinpath(srcdir, input_file)
             !isfile(input_file) && error(input_file, " dont found. src line ", li, ": ", line)
 
             input_file_lines = readlines(input_file)
             for i in reverse(eachindex(input_file_lines))
-                new_line = string(indent, input_file_lines[i])
+                new_line = input_file_lines[i]
                 
                 isfirst = (i == firstindex(input_file_lines))
                 isfirst ? lines[li] = new_line : insert!(lines, li + 1, new_line)

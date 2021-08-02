@@ -1,17 +1,26 @@
 const SETTINGS_FILE_NAME = "TexAssistant.toml"
 
-is_setting_file(file) = endswith(basename(file), SETTINGS_FILE_NAME)
+is_setting_file(file) = isfile(file) && endswith(basename(file), SETTINGS_FILE_NAME)
 
-function load_settings(path=pwd())
-    if isdir(path) && !(ishomedir(path) || isrootdir(path))
-        @info("isdir(path)", path)
+function current_proj(path=pwd())
+    !isdir(path) && return path
+    if !(ishomedir(path) || isrootdir(path))
         setfile = joinpath(path, SETTINGS_FILE_NAME)
-        return isfile(setfile) ? 
-            TOML.parsefile(setfile) : 
-            load_settings(dirname(path))
-    elseif isfile(path) && is_setting_file(path)
-        @info("isfile(path) && is_setting_file(path)", path)
-        return TOML.parsefile(path)
+        isfile(setfile) && return setfile
+        return current_proj(dirname(path))
     end
-    return Dict{String, Any}()
+    return path
 end
+
+function load_settings(;path = pwd())
+    setfile = current_proj(path)
+    is_setting_file(setfile) ? TOML.parsefile(setfile) : Dict{String, Any}()
+end
+
+function load_setting(k, dflt; path = pwd())
+    sets = load_settings(;path)
+    get(sets, k, dflt)
+end
+
+load_setting(k; path=pwd()) = load_setting(k, ""; path)
+

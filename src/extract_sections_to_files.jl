@@ -1,7 +1,34 @@
+## --------------------------------------------------------------------------
+function _extract_sections_to_files_arg_parse(argsv::Vector=ARGS)
+    # arg settings
+    argset = ArgParse.ArgParseSettings()
+    @ArgParse.add_arg_table! argset begin
+    "--srcfile", "-f"
+        help = "the path to the main file"
+        arg_type = String
+        default = load_setting("maintex", pwd())
+    "--dry-run", "-d"
+        help = "Only verbosity, no action"
+        action = :store_true
+    "--verbose", "-v"
+        help = "Print info while executing"
+        action = :store_true
+    "--overwrite", "-o"
+        help = "Allow ovewritting existing files"
+        action = :store_true
+    "--make-bk", "-b"
+        help = "Makes a linear backup"
+        action = :store_true
+    end
+    args = ArgParse.parse_args(argsv, argset)
+    to_symbol_arg_dict(args)
+end
+
+## --------------------------------------------------------------------------
 function extract_sections_to_files(;
-        srcfile::String="",
-        overwrite=false,
-        dry_run::Bool=false,
+        srcfile::String = "",
+        overwrite = false,
+        dry_run::Bool = false,
         verbose = true, 
         make_bk = true, 
         names_len = 30,
