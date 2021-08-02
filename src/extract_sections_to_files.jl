@@ -19,6 +19,9 @@ function _extract_sections_to_files_arg_parse(argsv::Vector=ARGS)
     "--make-bk", "-b"
         help = "Makes a linear backup"
         action = :store_true
+    "--clear-texs", "-c"
+        help = "Clear all the tex files excepts the main and the backup"
+        action = :store_true
     end
     args = ArgParse.parse_args(argsv, argset)
     to_symbol_arg_dict(args)
@@ -31,12 +34,13 @@ function extract_sections_to_files(;
         dry_run::Bool = false,
         verbose = true, 
         make_bk = true, 
-        names_len = 30,
+        names_len = 20,
+        clear_texs = true
     )
 
     # Set up src and dest
     srcdir = abspath(dirname(srcfile))
-    !isfile(srcfile) && error(srcfile, " dont found!!!")
+    !isfile(srcfile) && error(srcfile, " is not a file or is missing!")
 
     verbose && @info("Args", srcfile, overwrite, dry_run, verbose)
     verbose && println()
@@ -53,6 +57,18 @@ function extract_sections_to_files(;
             foreach((line) -> println(io, line), bk_lines)
         end
         verbose && @info("Backup created", bk_file)
+    end
+
+    # clear
+    if (clear_texs && make_bk && !dry_run)
+        for file in readdir(srcdir)
+            !endswith(file, ".tex") && continue
+            endswith(file, ".bk.tex") && continue
+            file == basename(srcfile) && continue
+            path = joinpath(srcdir, file)
+            rm(path; force = true)
+        end
+        verbose && @info("Folder cleared")
     end
 
     # file tree
@@ -73,11 +89,14 @@ function extract_sections_to_files(;
     function _newfilename(label) 
         fileid = string(sec_counter, ".", subsec_counter, ".", subsubsec_counter, "_")
         label = replace(label, " " => "_")
-        new_name = string(fileid, label)
-        if length(new_name) > names_len
-            new_name = string(new_name[begin:end - names_len - 2], "..")
+        if length(label) > names_len
+            mid0_end = max(1, div(names_len, 2) - 1)
+            mid0 = label[begin:mid0_end]
+            mid1_begin = max(mid0_end + 1, div(names_len, 2) + 2)
+            mid1 = label[mid1_begin:end]
+            label = string(mid0, "...", mid1)
         end
-        return string(new_name[begin:min(names_len, end)], ".tex")
+        return string(fileid, label, ".tex")
     end
 
     # deep record
@@ -145,7 +164,7 @@ function extract_sections_to_files(;
             parent = _get_parent(new_deep)
             _register_file!(new_file, parent)
             curr_deep[new_deep] = new_file
-            verbose && @info("New file", curr_file, parent, li, line)
+            verbose && @info("New file", new_file, parent, li, line)
             curr_file = new_file
 
             # add input to parent
@@ -178,8 +197,6 @@ function extract_sections_to_files(;
         file_dat = file_tree[curr_file]
         push!(file_dat[:lines], line)
     end
-
-    @show curr_deep
 
     ## create files
     function _concat_lines(lines)
