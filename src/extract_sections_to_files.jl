@@ -46,7 +46,9 @@ function extract_sections_to_files(;
     verbose && println()
 
     # src lines
-    srclines = expand_inputs(; srcfile, verbose = false, dry_run = true)
+    srclines = expand_inputs(; 
+        srcfile, verbose = false, dry_run = true, commented = false
+    )
 
     # make backup
     if (make_bk && !dry_run)
@@ -64,6 +66,7 @@ function extract_sections_to_files(;
         for file in readdir(srcdir)
             !endswith(file, ".tex") && continue
             endswith(file, ".bk.tex") && continue
+            endswith(file, ".expanded.tex") && continue
             file == basename(srcfile) && continue
             path = joinpath(srcdir, file)
             rm(path; force = true)

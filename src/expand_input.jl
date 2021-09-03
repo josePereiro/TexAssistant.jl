@@ -1,34 +1,45 @@
 ## --------------------------------------------------------------------------
-function _expand_input_parse_args(argsv::Vector=ARGS)
+_default_outfile(input_file) = replace(input_file, ".tex" => ".expanded.tex")
+
+## --------------------------------------------------------------------------
+_get_indent(input_line) = first(split(input_line, "\\input"))
+
+## --------------------------------------------------------------------------
+function _expand_inputs_parse_args(argsv::Vector=ARGS)
 
     # arg settings
     argset = ArgParse.ArgParseSettings()
     @ArgParse.add_arg_table! argset begin
-        "--proj", "-p"
-            help = "the path to the project folder"
-            arg_type = String
-            default = pwd()
-        "--dry-run", "-d"
-            help = "Only verbosity, no action"
-            arg_type = Bool
-            default = false
+    "--srcfile", "-f"
+        help = "the path to the main file"
+        arg_type = String
+        default = load_setting("maintex", pwd())
+    "--outfile", "-o"
+        help = "the path to the main file"
+        arg_type = String
+        default = ""
+    "--dry-run", "-d"
+        help = "Only verbosity, no action"
+        action = :store_true
+    "--commented", "-c"
+        help = "The extended file is all commented"
+        action = :store_true
+    "--verbose", "-v"
+        help = "Print info while executing"
+        action = :store_true
     end
     args = ArgParse.parse_args(argsv, argset)
+    isempty(args["outfile"]) && (args["outfile"] = _default_outfile(args["srcfile"]))
     to_symbol_arg_dict(args)
 end
-
-## --------------------------------------------------------------------------
-_default_outfile(input_file) = string(replace(input_file, ".tex" => ""), "_expanded.tex")
-
-## --------------------------------------------------------------------------
-_get_indent(input_line) = first(split(input_line, "\\input"))
 
 ## --------------------------------------------------------------------------
 function expand_inputs(;
         srcfile::String="",
         outfile::String=_default_outfile(srcfile),
         dry_run::Bool=false,
-        verbose=true
+        verbose=true, 
+        commented=true
     )
     
     # Set up src and dest
@@ -37,7 +48,7 @@ function expand_inputs(;
     dry_run || mkpath(outdir)
     !isfile(srcfile) && error(srcfile, " dont found!!!")
 
-    verbose && @info("Args", srcfile, outdir, dry_run, verbose)
+    verbose && @info("Args", srcfile, outfile, dry_run, verbose, commented)
     verbose && println()
     
     # expand infiles
@@ -70,7 +81,13 @@ function expand_inputs(;
     verbose && println()
 
     # write to dest
-    dry_run || write(outfile, join(lines, "\n"))
+    # dry_run || write(outfile, join(lines, "\n"))
+    if !dry_run
+        commented && (lines = map((line) -> string("% ", line), lines))
+        open(outfile, "w") do io
+            foreach((line) -> println(io, line), lines)
+        end
+    end
     verbose && @info("Output file", outfile)
     verbose && println()
 
