@@ -1,7 +1,7 @@
 name = "TexAssistant"
 uuid = "600230a9-b20f-4ec3-b56e-c0a439718caf"
 authors = ["josePereiro <jose.pereiro.lab@gmail.com> and contributors"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 BibTeX = "7b0aa2c9-049f-5cec-894a-2b6b781bb25e"
