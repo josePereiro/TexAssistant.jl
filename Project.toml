@@ -1,11 +1,12 @@
 name = "TexAssistant"
 uuid = "600230a9-b20f-4ec3-b56e-c0a439718caf"
 authors = ["josePereiro <jose.pereiro.lab@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
-ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+BibTeX = "7b0aa2c9-049f-5cec-894a-2b6b781bb25e"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
 
 [compat]
 julia = "1.5"
