@@ -2,6 +2,7 @@ module TexAssistant
 
     import ArgParse
     import TOML
+    import BibTeX
 
     include("utils.jl")
     include("regexs.jl")
@@ -11,6 +12,7 @@ module TexAssistant
     include("settings.jl")
     include("extractors.jl")
     include("tex_match.jl")
+    include("import_ref.jl")
 
     function __init__()
         _fill_regexs!()
