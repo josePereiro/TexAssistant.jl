@@ -16,7 +16,7 @@ _get_glob_bib() = get(ENV, "GLOBAL_BIB_LIBRARY") do
 end
 
 ## ------------------------------------------------------------------------------------------------------------------
-function parse_emptry(argsv::Vector)
+function parse_emtry(argsv::Vector)
     s = ArgParse.ArgParseSettings()
     ArgParse.@add_arg_table! s begin
         "--bibkey", "-k"
@@ -30,12 +30,20 @@ end
 ## ------------------------------------------------------------------------------------------------------------------
 function _import_ref_cli(argsv::Vector=ARGS)
 
-    id = parse_emptry(argsv)
+    id = parse_emtry(argsv)
 
+    # source .bib
     SRC_BIB = _get_glob_bib()
     @assert isfile(SRC_BIB) SRC_BIB
     @info("SRC", SRC_BIB)
-    DEST_BIB = joinpath(pwd(), string(basename(pwd()), ".bib"))
+    
+    # dest .bib
+    DEST_BIB = joinpath(pwd(), string(basename(pwd()), ".bib")) # default
+    for file in readdir(pwd(); join = true)
+        endswith(file, ".bib") || continue # local
+        DEST_BIB = file
+        break
+    end
     !isfile(DEST_BIB) && touch(DEST_BIB)
     @info("DEST", DEST_BIB)
 
