@@ -1,10 +1,15 @@
 ## ------------------------------------------------------------------------------------------------------------------
+# TODO: create an external config interface
+FIELDS_TO_IGNORE = ["abstract", "file", "annotation", "ids", "keywords"]
+
+
 function bib_to_str(d, key)
     emd = d[key]
     head = string("@", emd["type"], "{", key, ",")
     body = []
     for (key, dat) in emd
-        key in ["type"] && continue
+        key == "type" && continue
+        key in FIELDS_TO_IGNORE && continue
         push!(body, string(key, " = {", dat, "}"))
     end
     string(head, "\n\t", join(body, ",\n\t"), "\n}")
@@ -61,6 +66,7 @@ function _import_ref_cli(argsv::Vector=ARGS)
     NEW_STR = bib_to_str(src_result, id)
     DEST *= "\n\n"
     DEST *= NEW_STR
+    replace(DEST, "\n\n\n" => "\n")
     write(DEST_BIB, DEST)
 
     @info("Done!!!, emptry added!!!"); println()
